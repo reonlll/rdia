@@ -54,4 +54,6 @@ async def check_balance(interaction: discord.Interaction):
     )
 
 # トークン実行
+keep_alive()
+bot.run(TOKEN)
 bot.run(TOKEN)
