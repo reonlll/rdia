@@ -44,6 +44,32 @@ async def check_balance(interaction: discord.Interaction):
         ephemeral=True  # ← 自分だけに見える
     )
 
+@bot.tree.command(name="送金", description="他のユーザーにLydiaを送金します")
+@app_commands.describe(member="送金相手のユーザー", amount="送金するLydiaの額")
+async def transfer_balance(interaction: discord.Interaction, member: discord.Member, amount: int):
+    sender_id = interaction.user.id
+    receiver_id = member.id
+
+    if amount <= 0:
+        await interaction.response.send_message("送金額は1以上にしてください。", ephemeral=True)
+        return
+
+    sender_balance = user_balances.get(sender_id, 0)
+
+    if sender_balance < amount:
+        await interaction.response.send_message("残高が足りません。", ephemeral=True)
+        return
+
+    # 送金処理
+    user_balances[sender_id] = sender_balance - amount
+    user_balances[receiver_id] = user_balances.get(receiver_id, 0) + amount
+
+    await interaction.response.send_message(
+        f"{member.display_name} さんに {amount} Lydia を送金しました！\n"
+        f"あなたの新しい残高は {user_balances[sender_id]} Lydia です。",
+        ephemeral=True  # 自分だけに表示
+    )
+
 @bot.event
 async def on_ready():
     print(f"{bot.user} がログインしました！")
