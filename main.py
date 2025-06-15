@@ -26,15 +26,6 @@ intents.message_content = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-@bot.event
-async def on_ready():
-    print(f"{bot.user} がログインしました！")
-    try:
-        synced = await bot.tree.sync()
-        print(f"Slashコマンド {len(synced)} 個を同期しました")
-    except Exception as e:
-        print(f"スラッシュコマンド同期エラー: {e}")
-
 @bot.command()
 async def ping(ctx):
     await ctx.send("ぽん！")
@@ -52,6 +43,15 @@ async def check_balance(interaction: discord.Interaction):
         f"あなたの残高は {balance} Lydia です。",
         ephemeral=True  # ← 自分だけに見える
     )
+
+@bot.event
+async def on_ready():
+    print(f"{bot.user} がログインしました！")
+    try:
+        synced = await bot.tree.sync()
+        print(f"Slashコマンド {len(synced)} 個を同期しました")
+    except Exception as e:
+        print(f"スラッシュコマンド同期エラー: {e}")
 
 # トークン実行
 keep_alive()
