@@ -154,6 +154,31 @@ async def on_ready():
     except Exception as e:
         print(f"スラッシュコマンド同期エラー: {e}")
 
+@bot.tree.command(name="ロール送金", description="管理者専用：指定ロールの全メンバーにLydiaを一括送金します")
+@app_commands.describe(role="送金対象のロール", amount="1人あたりの送金額")
+async def send_to_role(interaction: discord.Interaction, role: discord.Role, amount: int):
+    if not interaction.user.guild_permissions.administrator:
+        await interaction.response.send_message("このコマンドは管理者のみ使用できます。", ephemeral=True)
+        return
+
+    if amount <= 0:
+        await interaction.response.send_message("送金額は1以上にしてください。", ephemeral=True)
+        return
+
+    recipients = [member for member in role.members if not member.bot]
+    
+    if not recipients:
+        await interaction.response.send_message(f"ロール `{role.name}` に属する人が見つかりません。", ephemeral=True)
+        return
+
+    for member in recipients:
+        user_balances[member.id] = user_balances.get(member.id, 0) + amount
+
+    await interaction.response.send_message(
+        f"ロール `{role.name}` の {len(recipients)} 人に、1人あたり {amount} Lydia を送金しました。",
+        ephemeral=True
+    )
+
 # トークン実行
 keep_alive()
 bot.run(TOKEN)
