@@ -115,6 +115,47 @@ async def ranking(interaction: discord.Interaction):
     text = "\n".join(lines)
     await interaction.response.send_message(f"💰 **Lydiaランキング** 💰\n{text}", ephemeral=True)
 
+@bot.tree.command(name="ロール増加", description="指定したロールの全員にLydiaを増加します")
+@app_commands.describe(role="対象のロール", amount="増加させるLydiaの金額")
+async def add_to_role(interaction: discord.Interaction, role: discord.Role, amount: int):
+    if not interaction.user.guild_permissions.administrator:
+        await interaction.response.send_message("このコマンドは管理者のみ使用できます。", ephemeral=True)
+        return
+
+    if amount <= 0:
+        await interaction.response.send_message("増加額は1以上にしてください。", ephemeral=True)
+        return
+
+    recipients = [member for member in role.members if not member.bot]
+    for member in recipients:
+        user_balances[member.id] = user_balances.get(member.id, 0) + amount
+
+    await interaction.response.send_message(
+        f"{role.name} ロールの {len(recipients)} 人に {amount} Lydia を増加させました。",
+        ephemeral=True
+    )
+    
+@bot.tree.command(name="ロール減少", description="指定したロールの全員からLydiaを減少させます")
+@app_commands.describe(role="対象のロール", amount="減少させるLydiaの金額")
+async def subtract_from_role(interaction: discord.Interaction, role: discord.Role, amount: int):
+    if not interaction.user.guild_permissions.administrator:
+        await interaction.response.send_message("このコマンドは管理者のみ使用できます。", ephemeral=True)
+        return
+
+    if amount <= 0:
+        await interaction.response.send_message("減少額は1以上にしてください。", ephemeral=True)
+        return
+
+    recipients = [member for member in role.members if not member.bot]
+    for member in recipients:
+        current = user_balances.get(member.id, 0)
+        user_balances[member.id] = max(current - amount, 0)
+
+    await interaction.response.send_message(
+        f"{role.name} ロールの {len(recipients)} 人から {amount} Lydia を減少させました。",
+        ephemeral=True
+    )
+
 # 起動時処理
 @bot.event
 async def on_ready():
