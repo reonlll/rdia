@@ -33,6 +33,20 @@ async def on_ready():
 @bot.command()
 async def ping(ctx):
     await ctx.send("ぽん！")
+    
+from discord import app_commands
+
+# 仮想通貨の残高を保存する辞書
+user_balances = {}
+
+@bot.tree.command(name="残高", description="自分のLydia残高を確認します")
+async def check_balance(interaction: discord.Interaction):
+    user_id = interaction.user.id
+    balance = user_balances.get(user_id, 0)
+    await interaction.response.send_message(
+        f"あなたの残高は {balance} Lydia です。",
+        ephemeral=True  # ← 自分だけに見える
+    )
 
 # トークン実行
 bot.run(TOKEN)
