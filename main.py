@@ -147,27 +147,29 @@ async def decrease_balance(interaction: discord.Interaction, member: discord.Mem
 
 from discord import app_commands
 
-@bot.tree.command(name="ロール増加", description="指定したロールのメンバーのLydia残高を増加します")
-@app_commands.describe(role="対象のロール", amount="増加するLydiaの金額")
-async def increase_balance_for_role(interaction: discord.Interaction, role: discord.Role, amount: int):
-    # 管理者のみ
+@bot.tree.command(name="ロール送金", description="指定したロールの全メンバーにLydiaを送金します")
+@app_commands.describe(role="対象のロール", amount="送金するLydiaの金額")
+async def send_to_role(interaction: discord.Interaction, role: discord.Role, amount: int):
     if not interaction.user.guild_permissions.administrator:
-        await interaction.response.send_message("このコマンドは管理者のみ使用できます。", ephemeral=True)
+        await interaction.response.send_message("このコマンドは管理者専用です。", ephemeral=True)
         return
 
     if amount <= 0:
-        await interaction.response.send_message("増加額は1以上にしてください。", ephemeral=True)
+        await interaction.response.send_message("送金額は1以上にしてください。", ephemeral=True)
         return
 
     recipients = [member for member in role.members if not member.bot]
 
+    if not recipients:
+        await interaction.response.send_message("このロールには送金対象となるメンバーがいません。", ephemeral=True)
+        return
+
     for member in recipients:
         current = user_balances.get(member.id, 0)
-        new_balance = current + amount
-        user_balances[member.id] = new_balance  # 0でも必ず上書き
+        user_balances[member.id] = current + amount
 
     await interaction.response.send_message(
-        f"✅ {role.name} ロールの {len(recipients)} 人のLydia残高を {amount} 増加させました！",
+        f"{role.name} ロールの {len(recipients)} 人に {amount} Lydia を送金しました。",
         ephemeral=True
     )
 
