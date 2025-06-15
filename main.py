@@ -30,7 +30,7 @@ class MyClient(commands.Bot):
 
 intents = discord.Intents.default()
 intents.message_content = True
-
+intents.members = True
 bot = MyClient(command_prefix="!", intents=intents)
 
 # /残高
