@@ -122,4 +122,4 @@ async def on_ready():
 
 # 実行
 keep_alive()
-bot.run
+bot.run(os.environ["DISCORD_TOKEN"])
