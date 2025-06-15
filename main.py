@@ -17,6 +17,17 @@ def keep_alive():
 import os
 import discord
 from discord.ext import commands
+from discord import app_commands
+
+user_balances = {}
+
+class MyClient(commands.Bot):
+    async def setup_hook(self):
+        await self.tree.sync()
+
+intents = discord.Intents.default()
+intents.message_content = True
+bot = MyClient(command_prefix="!", intents=intents)
 
 # 仮想通貨の残高を保存する辞書
 user_balances = {}
