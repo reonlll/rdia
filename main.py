@@ -173,6 +173,71 @@ async def send_to_role(interaction: discord.Interaction, role: discord.Role, amo
         ephemeral=True
     )
 
+from discord import app_commands
+from discord.ext import commands
+import discord
+
+# 辞書に残高を保存
+user_balances = {}
+
+class MyClient(commands.Bot):
+    async def setup_hook(self):
+        await self.tree.sync()
+
+bot = MyClient(command_prefix="!", intents=discord.Intents.all())
+
+@bot.tree.command(name="ロール増加", description="指定したロールの全員にLydiaを増加します")
+@app_commands.describe(role="対象のロール", amount="増加させるLydiaの金額")
+async def add_to_role(interaction: discord.Interaction, role: discord.Role, amount: int):
+    # 管理者のみ実行可能
+    if not interaction.user.guild_permissions.administrator:
+        await interaction.response.send_message("このコマンドは管理者のみ使用できます。", ephemeral=True)
+        return
+
+    if amount <= 0:
+        await interaction.response.send_message("増加金額は1以上にしてください。", ephemeral=True)
+        return
+
+    recipients = role.members
+    if not recipients:
+        await interaction.response.send_message("このロールにはメンバーがいません。", ephemeral=True)
+        return
+
+    for member in recipients:
+        user_balances[member.id] = user_balances.get(member.id, 0) + amount
+
+    await interaction.response.send_message(
+        f"{role.name} のメンバー {len(recipients)} 人に {amount} Lydia を増加させました。",
+        ephemeral=True
+    )
+    
+    @bot.tree.command(name="ロール減少", description="指定したロールの全員からLydiaを減少させます")
+@app_commands.describe(role="対象のロール", amount="減少させるLydiaの金額")
+async def decrease_from_role(interaction: discord.Interaction, role: discord.Role, amount: int):
+    # 管理者チェック
+    if not interaction.user.guild_permissions.administrator:
+        await interaction.response.send_message("このコマンドは管理者のみ使用できます。", ephemeral=True)
+        return
+
+    if amount <= 0:
+        await interaction.response.send_message("減少額は1以上にしてください。", ephemeral=True)
+        return
+
+    recipients = role.members
+    if not recipients:
+        await interaction.response.send_message("このロールにはメンバーがいません。", ephemeral=True)
+        return
+
+    for member in recipients:
+        current = user_balances.get(member.id, 0)
+        new_balance = max(current - amount, 0)  # マイナスにならないように
+        user_balances[member.id] = new_balance
+
+    await interaction.response.send_message(
+        f"{role.name} のメンバー {len(recipients)} 人から {amount} Lydia を減少させました。",
+        ephemeral=True
+    )
+
 @bot.event
 async def on_ready():
     print(f"{bot.user} がログインしました！")
