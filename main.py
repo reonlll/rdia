@@ -70,6 +70,25 @@ async def transfer_balance(interaction: discord.Interaction, member: discord.Mem
         ephemeral=True  # 自分だけに表示
     )
 
+@bot.tree.command(name="金額増加", description="管理者専用：指定ユーザーのLydiaを増やします")
+@app_commands.describe(member="増加させる相手", amount="増加させるLydiaの金額")
+async def increase_balance(interaction: discord.Interaction, member: discord.Member, amount: int):
+    if not interaction.user.guild_permissions.administrator:
+        await interaction.response.send_message("このコマンドは管理者のみ使用できます。", ephemeral=True)
+        return
+
+    if amount <= 0:
+        await interaction.response.send_message("増加額は1以上にしてください。", ephemeral=True)
+        return
+
+    user_balances[member.id] = user_balances.get(member.id, 0) + amount
+
+    await interaction.response.send_message(
+        f"{member.display_name} さんのLydia残高を {amount} 増加させました。\n"
+        f"現在の残高：{user_balances[member.id]} Lydia",
+        ephemeral=True
+    )
+
 @bot.event
 async def on_ready():
     print(f"{bot.user} がログインしました！")
