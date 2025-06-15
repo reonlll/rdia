@@ -88,6 +88,62 @@ async def increase_balance(interaction: discord.Interaction, member: discord.Mem
         f"現在の残高：{user_balances[member.id]} Lydia",
         ephemeral=True
     )
+@bot.tree.command(name="金額一覧", description="管理者専用：全ユーザーのLydiaをランキング形式で表示します")
+async def balance_ranking(interaction: discord.Interaction):
+    # 管理者チェック
+    if not interaction.user.guild_permissions.administrator:
+        await interaction.response.send_message("このコマンドは管理者のみ使用できます。", ephemeral=True)
+        return
+
+    if not user_balances:
+        await interaction.response.send_message("まだ誰もLydiaを持っていません。", ephemeral=True)
+        return
+
+    # 残高降順ソート
+    sorted_balances = sorted(user_balances.items(), key=lambda x: x[1], reverse=True)
+
+    ranking_lines = []
+    for i, (user_id, balance) in enumerate(sorted_balances, start=1):
+        member = interaction.guild.get_member(user_id)
+        if member:
+            ranking_lines.append(f"{i}. {member.display_name}：{balance} Lydia")
+        else:
+            ranking_lines.append(f"{i}. 不明なユーザー（ID: {user_id}）：{balance} Lydia")
+
+    ranking_text = "\n".join(ranking_lines)
+
+    await interaction.response.send_message(
+        f"💰 **Lydiaランキング** 💰\n\n{ranking_text}",
+        ephemeral=True  # 自分にだけ見える
+    )
+
+@bot.tree.command(name="金額減少", description="管理者専用：指定ユーザーのLydiaを減少させます")
+@app_commands.describe(member="減少させる相手", amount="減少させるLydiaの金額")
+async def decrease_balance(interaction: discord.Interaction, member: discord.Member, amount: int):
+    if not interaction.user.guild_permissions.administrator:
+        await interaction.response.send_message("このコマンドは管理者のみ使用できます。", ephemeral=True)
+        return
+
+    if amount <= 0:
+        await interaction.response.send_message("減少額は1以上にしてください。", ephemeral=True)
+        return
+
+    current_balance = user_balances.get(member.id, 0)
+
+    if current_balance < amount:
+        await interaction.response.send_message(
+            f"{member.display_name} さんの残高が不足しています。\n現在の残高：{current_balance} Lydia",
+            ephemeral=True
+        )
+        return
+
+    user_balances[member.id] = current_balance - amount
+
+    await interaction.response.send_message(
+        f"{member.display_name} さんのLydia残高を {amount} 減少させました。\n"
+        f"新しい残高：{user_balances[member.id]} Lydia",
+        ephemeral=True
+    )
 
 @bot.event
 async def on_ready():
