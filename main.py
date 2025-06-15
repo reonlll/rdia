@@ -145,15 +145,6 @@ async def decrease_balance(interaction: discord.Interaction, member: discord.Mem
         ephemeral=True
     )
 
-@bot.event
-async def on_ready():
-    print(f"{bot.user} がログインしました！")
-    try:
-        synced = await bot.tree.sync()
-        print(f"Slashコマンド {len(synced)} 個を同期しました")
-    except Exception as e:
-        print(f"スラッシュコマンド同期エラー: {e}")
-
 @bot.tree.command(name="ロール送金", description="管理者専用：指定ロールの全メンバーにLydiaを一括送金します")
 @app_commands.describe(role="送金対象のロール", amount="1人あたりの送金額")
 async def send_to_role(interaction: discord.Interaction, role: discord.Role, amount: int):
@@ -178,6 +169,15 @@ async def send_to_role(interaction: discord.Interaction, role: discord.Role, amo
         f"ロール `{role.name}` の {len(recipients)} 人に、1人あたり {amount} Lydia を送金しました。",
         ephemeral=True
     )
+
+@bot.event
+async def on_ready():
+    print(f"{bot.user} がログインしました！")
+    try:
+        synced = await bot.tree.sync()
+        print(f"Slashコマンド {len(synced)} 個を同期しました")
+    except Exception as e:
+        print(f"スラッシュコマンド同期エラー: {e}")
 
 # トークン実行
 keep_alive()
