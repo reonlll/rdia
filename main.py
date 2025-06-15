@@ -211,10 +211,12 @@ async def add_to_role(interaction: discord.Interaction, role: discord.Role, amou
         ephemeral=True
     )
     
-    @bot.tree.command(name="ロール減少", description="指定したロールの全員からLydiaを減少させます")
-@app_commands.describe(role="対象のロール", amount="減少させるLydiaの金額")
+@bot.tree.command(name="ロール減少", description="指定したロールの全員からLydiaを減少させます")
+@app_commands.describe(
+    role="対象のロール",
+    amount="減少させるLydiaの金額"
+)
 async def decrease_from_role(interaction: discord.Interaction, role: discord.Role, amount: int):
-    # 管理者チェック
     if not interaction.user.guild_permissions.administrator:
         await interaction.response.send_message("このコマンドは管理者のみ使用できます。", ephemeral=True)
         return
@@ -230,7 +232,7 @@ async def decrease_from_role(interaction: discord.Interaction, role: discord.Rol
 
     for member in recipients:
         current = user_balances.get(member.id, 0)
-        new_balance = max(current - amount, 0)  # マイナスにならないように
+        new_balance = max(current - amount, 0)
         user_balances[member.id] = new_balance
 
     await interaction.response.send_message(
