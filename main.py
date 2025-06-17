@@ -329,6 +329,7 @@ async def detach_role(interaction: discord.Interaction, role_name: str):
 # 起動時処理
 @bot.event
 async def on_ready():
+    load_balances()
     print(f"{bot.user} がログインしました！")
 
 # 実行
