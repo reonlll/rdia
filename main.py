@@ -15,6 +15,7 @@ def keep_alive():
     t = Thread(target=run)
     t.start()
 
+import json
 import os
 import discord
 from discord.ext import commands
