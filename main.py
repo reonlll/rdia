@@ -41,6 +41,9 @@ def save_balances():
     res = requests.put(url, headers=headers, data=data)
     print("保存結果:", res.status_code)
 
+def save_roles():
+    save_to_jsonbin(ROLE_BIN_ID, user_owned_roles)
+
 def load_balances():
     global user_balances
     url = f"https://api.jsonbin.io/v3/b/{BIN_ID}/latest"
