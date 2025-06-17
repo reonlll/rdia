@@ -233,7 +233,36 @@ async def role_list(interaction: discord.Interaction):
         ephemeral=True
     )
     
+@bot.tree.command(name="ロール付与", description="自分が引いたロールから1つを選んで付与します。")
+@app_commands.describe(role_name="付与したいロール名（選択式）")
+@app_commands.autocomplete(role_name=lambda interaction, current: [
+    app_commands.Choice(name=role, value=role)
+    for role in user_owned_roles.get(interaction.user.id, [])
+    if current.lower() in role.lower()
+])
+async def assign_role(interaction: discord.Interaction, role_name: str):
+    user = interaction.user
+    guild = interaction.guild
+    owned = user_owned_roles.get(user.id, [])
 
+    if role_name not in owned:
+        await interaction.response.send_message("❌ このロールはガチャで獲得していません。", ephemeral=True)
+        return
+
+    role = discord.utils.get(guild.roles, name=role_name)
+    if not role:
+        await interaction.response.send_message("⚠️ 指定したロールがサーバーに存在しません。", ephemeral=True)
+        return
+
+    if role in user.roles:
+        await interaction.response.send_message("✅ すでにこのロールは付与されています。", ephemeral=True)
+        return
+
+    try:
+        await user.add_roles(role)
+        await interaction.response.send_message(f"🎉 ロール **{role.name}** を付与しました！", ephemeral=True)
+    except discord.Forbidden:
+        await interaction.response.send_message("🚫 Botにそのロールを付与する権限がありません。", ephemeral=True)
 
 
 # 起動時処理
