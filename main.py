@@ -23,11 +23,9 @@ from discord.ext import commands
 from discord import app_commands
 
 # --- jsonbin.io用設定 ---
-BIN_ID = "685190308960c979a5ab83e4"
+BALANCE_BIN_ID = "685190308960c979a5ab83e4"  # ←修正
+ROLES_BIN_ID = "6851e9728960c979a5abb516"
 API_KEY = "$2a$10$DUY6hRZaDGFQ1O6ddUbZpuDZY/k0xEA6iX69Ec2Qgc5Y4Rnihr9iO"
-
-# --- roles.json用 ---
-ROLE_BIN_ID = "6851e9728960c979a5abb516"
 
 
 def save_balances():
