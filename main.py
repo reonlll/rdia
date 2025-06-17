@@ -325,7 +325,8 @@ async def assign_role(interaction: discord.Interaction, role_name: str):
     user = interaction.user
     guild = interaction.guild
     owned = user_owned_roles.get(user.id, [])
-
+    save_roles()
+    
     if role_name not in owned:
         await interaction.response.send_message("❌ このロールはガチャで獲得していません。", ephemeral=True)
         return
@@ -362,7 +363,7 @@ async def detach_role(interaction: discord.Interaction, role_name: str):
     user = interaction.user
     guild = interaction.guild
     owned = user_owned_roles.get(user.id, [])
-
+    save_roles()
     if role_name not in owned:
         await interaction.response.send_message("❌ このロールはガチャで獲得していません。", ephemeral=True)
         return
