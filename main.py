@@ -22,19 +22,33 @@ import requests
 from discord.ext import commands
 from discord import app_commands
 
-# --- 仮想通貨保存ファイルのパス ---
-BALANCE_FILE = "balances.json"
+# --- jsonbin.io用設定 ---
+BIN_ID = "685190308960c979a5ab83e4"
+API_KEY = "$2a$10$DUY6hRZaDGFQ1O6ddUbZpuDZY/k0xEA6iX69Ec2Qgc5Y4Rnihr9iO"
 
-# --- 残高保存と読み込みの関数 ---
 def save_balances():
-    with open(BALANCE_FILE, "w", encoding="utf-8") as f:
-        json.dump(user_balances, f)
+    url = f"https://api.jsonbin.io/v3/b/{BIN_ID}"
+    headers = {
+        "Content-Type": "application/json",
+        "X-Master-Key": API_KEY,
+        "X-Bin-Versioning": "false"
+    }
+    data = json.dumps(user_balances)
+    res = requests.put(url, headers=headers, data=data)
+    print("保存結果:", res.status_code)
 
 def load_balances():
     global user_balances
-    if os.path.exists(BALANCE_FILE):
-        with open(BALANCE_FILE, "r", encoding="utf-8") as f:
-            user_balances = {int(k): v for k, v in json.load(f).items()}
+    url = f"https://api.jsonbin.io/v3/b/{BIN_ID}/latest"
+    headers = {
+        "X-Master-Key": API_KEY
+    }
+    res = requests.get(url, headers=headers)
+    if res.status_code == 200:
+        user_balances = {int(k): v for k, v in res.json()['record'].items()}
+        print("読み込み成功:", user_balances)
+    else:
+        print("読み込み失敗:", res.status_code)
 
 # --- データ構造（残高・ロール記録など） ---
 user_balances = {}
