@@ -233,13 +233,19 @@ async def role_list(interaction: discord.Interaction):
         ephemeral=True
     )
     
+# オートコンプリート関数（asyncに修正）
+async def autocomplete_roles(interaction: discord.Interaction, current: str):
+    owned = user_owned_roles.get(interaction.user.id, [])
+    return [
+        app_commands.Choice(name=role, value=role)
+        for role in owned
+        if current.lower() in role.lower()
+    ]
+
+# ロール付与コマンド（選択式）
 @bot.tree.command(name="ロール付与", description="自分が引いたロールから1つを選んで付与します。")
 @app_commands.describe(role_name="付与したいロール名（選択式）")
-@app_commands.autocomplete(role_name=lambda interaction, current: [
-    app_commands.Choice(name=role, value=role)
-    for role in user_owned_roles.get(interaction.user.id, [])
-    if current.lower() in role.lower()
-])
+@app_commands.autocomplete(role_name=autocomplete_roles)
 async def assign_role(interaction: discord.Interaction, role_name: str):
     user = interaction.user
     guild = interaction.guild
