@@ -18,6 +18,7 @@ def keep_alive():
 import json
 import os
 import discord
+import requests
 from discord.ext import commands
 from discord import app_commands
 
