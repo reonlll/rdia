@@ -57,8 +57,6 @@ def load_balances():
     else:
         print("読み込み失敗:", res.status_code)
 
-import requests
-
 # 保存処理（共通化）
 def save_to_jsonbin(bin_id, data):
     url = f"https://api.jsonbin.io/v3/b/{bin_id}"
