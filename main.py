@@ -294,6 +294,7 @@ async def setup_gacha(interaction: discord.Interaction):
     )
 
     await interaction.channel.send(embed=embed, view=GachaButtonView())
+    save_roles()
     await interaction.response.send_message("✅ ガチャを設置しました！", ephemeral=True)
 
 @bot.tree.command(name="ロール所持一覧", description="自分がガチャで引いたロール一覧を確認します。")
