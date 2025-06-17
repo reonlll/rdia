@@ -198,7 +198,7 @@ class GachaButtonView(ui.View):
             ephemeral=True
         )
         
-@client.tree.command(name="ロールガチャ設置", description="ロールガチャの説明とボタンを設置します（管理者限定）")
+@bot.tree.command(name="ロールガチャ設置", description="ロールガチャの説明とボタンを設置します（管理者限定）")
 async def setup_gacha(interaction: discord.Interaction):
     if not interaction.user.guild_permissions.administrator:
         await interaction.response.send_message("このコマンドは管理者限定です。", ephemeral=True)
@@ -221,7 +221,7 @@ async def setup_gacha(interaction: discord.Interaction):
     await interaction.channel.send(embed=embed, view=GachaButtonView())
     await interaction.response.send_message("✅ ガチャを設置しました！", ephemeral=True)
 
-@client.tree.command(name="ロール所持一覧", description="自分がガチャで引いたロール一覧を確認します。")
+@bot.tree.command(name="ロール所持一覧", description="自分がガチャで引いたロール一覧を確認します。")
 async def role_list(interaction: discord.Interaction):
     owned = user_owned_roles.get(interaction.user.id, [])
     if not owned:
