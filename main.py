@@ -21,6 +21,24 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 
+# --- 仮想通貨保存ファイルのパス ---
+BALANCE_FILE = "balances.json"
+
+# --- 残高保存と読み込みの関数 ---
+def save_balances():
+    with open(BALANCE_FILE, "w", encoding="utf-8") as f:
+        json.dump(user_balances, f)
+
+def load_balances():
+    global user_balances
+    if os.path.exists(BALANCE_FILE):
+        with open(BALANCE_FILE, "r", encoding="utf-8") as f:
+            user_balances = {int(k): v for k, v in json.load(f).items()}
+
+# --- データ構造（残高・ロール記録など） ---
+user_balances = {}
+user_owned_roles = {}
+
 # 仮想通貨残高を保存
 user_balances = {}
 
