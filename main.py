@@ -32,7 +32,7 @@ class MyClient(commands.Bot):
     async def setup_hook(self):
         await self.tree.sync()
 
-client = MyClient(command_prefix="!", intents=intents)
+# 意図的に「client」を使ってないなら、下の1行だけに統一しましょう👇
 
 intents = discord.Intents.default()
 intents.message_content = True
