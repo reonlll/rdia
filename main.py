@@ -270,6 +270,33 @@ async def assign_role(interaction: discord.Interaction, role_name: str):
     except discord.Forbidden:
         await interaction.response.send_message("🚫 Botにそのロールを付与する権限がありません。", ephemeral=True)
 
+@bot.tree.command(name="ロール外し", description="自分からロールを外します（所持記録は残ります）")
+@app_commands.describe(role_name="外したいロール名（選択式）")
+@app_commands.autocomplete(role_name=autocomplete_owned_roles)
+async def detach_role(interaction: discord.Interaction, role_name: str):
+    user = interaction.user
+    guild = interaction.guild
+    owned = user_owned_roles.get(user.id, [])
+
+    if role_name not in owned:
+        await interaction.response.send_message("❌ このロールはガチャで獲得していません。", ephemeral=True)
+        return
+
+    role = discord.utils.get(guild.roles, name=role_name)
+    if not role:
+        await interaction.response.send_message("⚠️ ロールがサーバー上に見つかりません。", ephemeral=True)
+        return
+
+    if role not in user.roles:
+        await interaction.response.send_message("🔎 現在そのロールは付与されていません。", ephemeral=True)
+        return
+
+    try:
+        await user.remove_roles(role)
+        await interaction.response.send_message(f"🗑 ロール **{role.name}** を外しました。", ephemeral=True)
+    except discord.Forbidden:
+        await interaction.response.send_message("🚫 Botにそのロールを外す権限がありません。", ephemeral=True)
+
 
 # 起動時処理
 @bot.event
