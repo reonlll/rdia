@@ -39,9 +39,6 @@ def load_balances():
 user_balances = {}
 user_owned_roles = {}
 
-# 仮想通貨残高を保存
-user_balances = {}
-
 # ガチャで引いたロールの記録用（再起動で消える）
 user_owned_roles = {}  # user_id: [ロール名, ロール名, ...]
 
