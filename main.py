@@ -26,6 +26,10 @@ from discord import app_commands
 BIN_ID = "685190308960c979a5ab83e4"
 API_KEY = "$2a$10$DUY6hRZaDGFQ1O6ddUbZpuDZY/k0xEA6iX69Ec2Qgc5Y4Rnihr9iO"
 
+# --- roles.json用 ---
+ROLE_BIN_ID = "6851e9728960c979a5abb516"
+
+
 def save_balances():
     url = f"https://api.jsonbin.io/v3/b/{BIN_ID}"
     headers = {
@@ -49,6 +53,43 @@ def load_balances():
         print("読み込み成功:", user_balances)
     else:
         print("読み込み失敗:", res.status_code)
+
+import requests
+
+# 保存処理（共通化）
+def save_to_jsonbin(bin_id, data):
+    url = f"https://api.jsonbin.io/v3/b/{bin_id}"
+    headers = {
+        "Content-Type": "application/json",
+        "X-Master-Key": API_KEY,
+        "X-Bin-Versioning": "false"
+    }
+    requests.put(url, headers=headers, json=data)
+
+def save_balances():
+    save_to_jsonbin(BALANCE_BIN_ID, user_balances)
+
+def save_roles():
+    save_to_jsonbin(ROLES_BIN_ID, user_owned_roles)
+
+def load_from_jsonbin(bin_id):
+    url = f"https://api.jsonbin.io/v3/b/{bin_id}/latest"
+    headers = {
+        "X-Master-Key": API_KEY
+    }
+    res = requests.get(url, headers=headers)
+    if res.status_code == 200:
+        return res.json()["record"]
+    else:
+        return {}
+
+def load_balances():
+    global user_balances
+    user_balances = {int(k): v for k, v in load_from_jsonbin(BALANCE_BIN_ID).items()}
+
+def load_roles():
+    global user_owned_roles
+    user_owned_roles = {int(k): v for k, v in load_from_jsonbin(ROLES_BIN_ID).items()}
 
 # --- データ構造（残高・ロール記録など） ---
 user_balances = {}
@@ -345,6 +386,7 @@ async def detach_role(interaction: discord.Interaction, role_name: str):
 @bot.event
 async def on_ready():
     load_balances()
+    load_roles()
     print(f"{bot.user} がログインしました！")
 
 # 実行
