@@ -23,6 +23,10 @@ from discord import app_commands
 # 仮想通貨残高を保存
 user_balances = {}
 
+# ガチャで引いたロールの記録用（再起動で消える）
+user_owned_roles = {}  # user_id: [ロール名, ロール名, ...]
+
+
 # MyClient定義
 class MyClient(commands.Bot):
     async def setup_hook(self):
