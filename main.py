@@ -75,6 +75,7 @@ async def transfer(interaction: discord.Interaction, member: discord.Member, amo
         return
     user_balances[sender_id] -= amount
     user_balances[receiver_id] = user_balances.get(receiver_id, 0) + amount
+    save_balances()
     await interaction.response.send_message(
         f"{member.display_name} さんに {amount} Lydia を送金しました！\n"
         f"あなたの新しい残高は {user_balances[sender_id]} Lydia です。",
@@ -92,6 +93,8 @@ async def increase(interaction: discord.Interaction, member: discord.Member, amo
         await interaction.response.send_message("金額は1以上で指定してください。", ephemeral=True)
         return
     user_balances[member.id] = user_balances.get(member.id, 0) + amount
+    save_balances()
+    
     await interaction.response.send_message(
         f"{member.display_name} さんに {amount} Lydia を増加しました。\n"
         f"現在の残高：{user_balances[member.id]} Lydia", ephemeral=True)
@@ -107,6 +110,7 @@ async def decrease(interaction: discord.Interaction, member: discord.Member, amo
         await interaction.response.send_message("金額は1以上で指定してください。", ephemeral=True)
         return
     current = user_balances.get(member.id, 0)
+    save_balances()
     if current < amount:
         await interaction.response.send_message("残高が足りません。", ephemeral=True)
         return
@@ -168,6 +172,7 @@ async def subtract_from_role(interaction: discord.Interaction, role: discord.Rol
     for member in recipients:
         current = user_balances.get(member.id, 0)
         user_balances[member.id] = max(current - amount, 0)
+        save_balances()
 
     await interaction.response.send_message(
         f"{role.name} ロールの {len(recipients)} 人から {amount} Lydia を減少させました。",
@@ -193,6 +198,7 @@ class GachaButtonView(ui.View):
     async def gacha(self, interaction: discord.Interaction, button: ui.Button):
         user_id = interaction.user.id
         balance = user_balances.get(user_id, 0)
+        save_balances()
 
         if balance < GACHA_COST:
             await interaction.response.send_message("💸 Lydiaが足りません！（30000必要）", ephemeral=True)
