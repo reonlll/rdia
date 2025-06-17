@@ -270,6 +270,16 @@ async def assign_role(interaction: discord.Interaction, role_name: str):
     except discord.Forbidden:
         await interaction.response.send_message("🚫 Botにそのロールを付与する権限がありません。", ephemeral=True)
 
+# 非同期オートコンプリート関数（必ず async def で書く）
+async def autocomplete_owned_roles(interaction: discord.Interaction, current: str):
+    owned = user_owned_roles.get(interaction.user.id, [])
+    return [
+        app_commands.Choice(name=role, value=role)
+        for role in owned
+        if current.lower() in role.lower()
+    ]
+
+# /ロール外しコマンド（記録は残す）
 @bot.tree.command(name="ロール外し", description="自分からロールを外します（所持記録は残ります）")
 @app_commands.describe(role_name="外したいロール名（選択式）")
 @app_commands.autocomplete(role_name=autocomplete_owned_roles)
