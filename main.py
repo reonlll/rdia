@@ -99,6 +99,7 @@ tower_data = {
     "light": 0,
     "shadow": 0
 }
+LAST_STACK = {}
 
 # MyClient定義
 class MyClient(commands.Bot):
