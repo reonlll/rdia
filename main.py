@@ -481,7 +481,6 @@ async def stack_tower(interaction: discord.Interaction):
     user = interaction.user
     user_id = user.id
 
-    # ロールチェック（太陽・月に変更済み）
     太陽ロール = discord.utils.get(user.roles, name="太陽")
     月ロール = discord.utils.get(user.roles, name="月")
 
@@ -490,7 +489,6 @@ async def stack_tower(interaction: discord.Interaction):
         return
 
     today = datetime.datetime.utcnow().strftime("%Y-%m-%d")
-
     if LAST_STACK.get(user_id) == today:
         await interaction.response.send_message("📅 今日はもう塔を積みました。", ephemeral=True)
         return
@@ -506,7 +504,9 @@ async def stack_tower(interaction: discord.Interaction):
 
     LAST_STACK[user_id] = today
 
-    await interaction.channel.send(f"{tower_name} に {stack_amount}階 積みました！")
+    await interaction.channel.send(
+        f"🧱 {user.display_name} さんが **{tower_name}** に **{stack_amount}階** 積みました！"
+    )
     await interaction.response.send_message("✅ 塔を積みました！", ephemeral=True)
 
 @bot.tree.command(name="日にちリセット", description="全ユーザーの塔積み制限をリセットします（管理者専用）")
