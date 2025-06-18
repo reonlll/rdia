@@ -515,6 +515,15 @@ async def stack_tower(interaction: discord.Interaction):
     await interaction.channel.send(f"{tower_name} に {stack_amount}階 積みました！")
     await interaction.response.send_message("✅ 塔を積みました！", ephemeral=True)
 
+@bot.tree.command(name="日にちリセット", description="全ユーザーの塔積み制限をリセットします（管理者専用）")
+async def reset_stack_date(interaction: discord.Interaction):
+    if not interaction.user.guild_permissions.administrator:
+        await interaction.response.send_message("❌ 管理者専用のコマンドです。", ephemeral=True)
+        return
+
+    LAST_STACK.clear()
+    await interaction.response.send_message("✅ 全ユーザーの塔積み制限をリセットしました。")
+
 # 起動時処理
 @bot.event
 async def on_ready():
