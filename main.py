@@ -93,6 +93,10 @@ def load_roles():
 # --- データ構造（残高・ロール記録など） ---
 user_balances = {}
 user_owned_roles = {}
+tower_data = {
+    "light": 0,
+    "dark": 0
+}
 
 # MyClient定義
 class MyClient(commands.Bot):
