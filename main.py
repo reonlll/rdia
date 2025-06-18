@@ -477,6 +477,7 @@ async def view_tower(interaction: discord.Interaction):
         await interaction.response.send_message("🔒 このコマンドを使うには「光」または「影」のロールが必要です。", ephemeral=True)
 
 import datetime
+import random
 
 @bot.tree.command(name="塔を積む", description="自分の塔に1日1回だけ階を積みます（1〜5階）")
 async def stack_tower(interaction: discord.Interaction):
@@ -488,6 +489,7 @@ async def stack_tower(interaction: discord.Interaction):
         await interaction.response.send_message("今日はすでに塔を積みました！", ephemeral=True)
         return
 
+    # 勢力判定
     is_light = any(role.name == "光" for role in user.roles)
     is_shadow = any(role.name == "影" for role in user.roles)
 
@@ -496,36 +498,15 @@ async def stack_tower(interaction: discord.Interaction):
         return
 
     floor = random.randint(1, 5)
-    result_text = ""
-    visible_role = None
-
     if is_light:
         tower_data["light"] += floor
-        result_text = f"🌞 {user.display_name} が光の塔に **{floor}階** 積みました！"
-        visible_role = discord.utils.get(interaction.guild.roles, name="光")
+        await interaction.response.send_message(f"🌞 光の塔に **{floor}階** 積みました！", ephemeral=True)
     elif is_shadow:
         tower_data["shadow"] += floor
-        result_text = f"🌑 {user.display_name} が影の塔に **{floor}階** 積みました！"
-        visible_role = discord.utils.get(interaction.guild.roles, name="影")
-
-    # 成果メッセージを、そのロールだけに見えるように送信
-    if visible_role:
-        overwrites = {
-            interaction.guild.default_role: discord.PermissionOverwrite(view_channel=False),
-            visible_role: discord.PermissionOverwrite(view_channel=True)
-        }
-
-        category = interaction.channel.category
-        private_channel = await interaction.guild.create_text_channel(
-            name="塔ログ", overwrites=overwrites, category=category
-        )
-
-        await private_channel.send(result_text)
+        await interaction.response.send_message(f"🌑 影の塔に **{floor}階** 積みました！", ephemeral=True)
 
     last_stack_date[user.id] = str(today)
     save_tower_data()
-
-    await interaction.response.send_message("✅ 塔を積みました！", ephemeral=True)
 
 # 起動時処理
 @bot.event
