@@ -95,7 +95,7 @@ user_balances = {}
 user_owned_roles = {}
 tower_data = {
     "light": 0,
-    "dark": 0
+    "shadow": 0
 }
 
 # MyClient定義
