@@ -478,45 +478,54 @@ async def view_tower(interaction: discord.Interaction):
 
 import datetime
 
-@bot.tree.command(name="塔を積む", description="自分の塔を1日1回積み上げます（1〜5階）")
+@bot.tree.command(name="塔を積む", description="自分の塔に1日1回だけ階を積みます（1〜5階）")
 async def stack_tower(interaction: discord.Interaction):
     user = interaction.user
-    user_id = user.id
+    today = datetime.date.today()
 
-    # 所属ロール確認
-    has_light = discord.utils.get(user.roles, name="光")
-    has_shadow = discord.utils.get(user.roles, name="影")
-
-    if not has_light and not has_shadow:
-        await interaction.response.send_message("❌ このコマンドは「光」または「影」ロールを持つ本メンバー専用です。", ephemeral=True)
+    user_last = last_stack_date.get(user.id)
+    if user_last == str(today):
+        await interaction.response.send_message("今日はすでに塔を積みました！", ephemeral=True)
         return
 
-    # 今日すでに積んだかチェック
-    today = datetime.datetime.now().date()
-    if last_stack_date.get(user_id) == today:
-        await interaction.response.send_message("📅 今日はすでに塔を積みました！明日また挑戦してください。", ephemeral=True)
+    is_light = any(role.name == "光" for role in user.roles)
+    is_shadow = any(role.name == "影" for role in user.roles)
+
+    if not is_light and not is_shadow:
+        await interaction.response.send_message("どちらの勢力にも所属していません。", ephemeral=True)
         return
 
-    # ランダムに1〜5階
-    added = random.randint(1, 5)
+    floor = random.randint(1, 5)
+    result_text = ""
+    visible_role = None
 
-    if has_light and not has_shadow:
-        tower_data["light"] += added
-        tower_name = "光の塔"
-    elif has_shadow and not has_light:
-        tower_data["shadow"] += added
-        tower_name = "影の塔"
-    else:
-        await interaction.response.send_message("⚠️ あなたは『光』『影』両方のロールを持っています。運営にご連絡ください。", ephemeral=True)
-        return
+    if is_light:
+        tower_data["light"] += floor
+        result_text = f"🌞 {user.display_name} が光の塔に **{floor}階** 積みました！"
+        visible_role = discord.utils.get(interaction.guild.roles, name="光")
+    elif is_shadow:
+        tower_data["shadow"] += floor
+        result_text = f"🌑 {user.display_name} が影の塔に **{floor}階** 積みました！"
+        visible_role = discord.utils.get(interaction.guild.roles, name="影")
 
-    # 日付記録
-    last_stack_date[user_id] = today
+    # 成果メッセージを、そのロールだけに見えるように送信
+    if visible_role:
+        overwrites = {
+            interaction.guild.default_role: discord.PermissionOverwrite(view_channel=False),
+            visible_role: discord.PermissionOverwrite(view_channel=True)
+        }
 
-    await interaction.response.send_message(
-        f"🧱 あなたは **{tower_name}** を **{added}階** 積み上げました！\n"
-        f"また明日挑戦できます！", ephemeral=True
-    )
+        category = interaction.channel.category
+        private_channel = await interaction.guild.create_text_channel(
+            name="塔ログ", overwrites=overwrites, category=category
+        )
+
+        await private_channel.send(result_text)
+
+    last_stack_date[user.id] = str(today)
+    save_tower_data()
+
+    await interaction.response.send_message("✅ 塔を積みました！", ephemeral=True)
 
 # 起動時処理
 @bot.event
