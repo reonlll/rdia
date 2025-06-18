@@ -451,18 +451,21 @@ async def janken(interaction: discord.Interaction):
         view=JankenView(interaction.user.id)
     )
 
-@bot.tree.command(name="塔を見る", description="現在の塔の進捗を確認します（光/闇ロール所持者専用）")
+@bot.tree.command(name="塔を見る", description="自分の所属する塔の進捗を確認します")
 async def view_tower(interaction: discord.Interaction):
     user = interaction.user
-    roles = [r.name for r in user.roles]
-    
-    if "光" in roles:
-        await interaction.response.send_message(f"🗼 **光の塔** は現在 **{tower_data['light']} 階**です。", ephemeral=False)
-    elif "闇" in roles:
-        await interaction.response.send_message(f"🌑 **闇の塔** は現在 **{tower_data['dark']} 階**です。", ephemeral=False)
-    else:
-        await interaction.response.send_message("🔒 塔を見るには「光」または「闇」のロールが必要です。", ephemeral=True)
 
+    has_light_role = discord.utils.get(user.roles, name="光")
+    has_shadow_role = discord.utils.get(user.roles, name="影")
+
+    if has_light_role and not has_shadow_role:
+        await interaction.response.send_message(f"🗼 **光の塔** は現在 **{tower_data['light']} 階**です。", ephemeral=False)
+    elif has_shadow_role and not has_light_role:
+        await interaction.response.send_message(f"🌑 **影の塔** は現在 **{tower_data['shadow']} 階**です。", ephemeral=False)
+    elif has_light_role and has_shadow_role:
+        await interaction.response.send_message("⚠️ あなたは『光』と『影』両方のロールを持っています。運営に確認してください。", ephemeral=True)
+    else:
+        await interaction.response.send_message("🔒 塔を見るには「光」または「影」のロールが必要です。", ephemeral=True)
 
 # 起動時処理
 @bot.event
