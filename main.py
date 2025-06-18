@@ -382,6 +382,71 @@ async def detach_role(interaction: discord.Interaction, role_name: str):
     except discord.Forbidden:
         await interaction.response.send_message("🚫 Botにそのロールを外す権限がありません。", ephemeral=True)
 
+from discord import ui, Interaction, ButtonStyle
+import random
+
+JANKEN_COST = 2000
+JANKEN_CHOICES = {"✊": "グー", "✌️": "チョキ", "✋": "パー"}
+
+class JankenView(ui.View):
+    def __init__(self, user_id):
+        super().__init__(timeout=30)
+        self.user_id = user_id
+
+    async def interaction_check(self, interaction: Interaction) -> bool:
+        if interaction.user.id != self.user_id:
+            await interaction.response.send_message("これは他の人のじゃんけんです。", ephemeral=True)
+            return False
+        return True
+
+    @ui.button(label="✊", style=ButtonStyle.primary)
+    async def rock(self, interaction: Interaction, button: ui.Button):
+        await self.play_janken(interaction, "✊")
+
+    @ui.button(label="✌️", style=ButtonStyle.primary)
+    async def scissors(self, interaction: Interaction, button: ui.Button):
+        await self.play_janken(interaction, "✌️")
+
+    @ui.button(label="✋", style=ButtonStyle.primary)
+    async def paper(self, interaction: Interaction, button: ui.Button):
+        await self.play_janken(interaction, "✋")
+
+    async def play_janken(self, interaction: Interaction, user_choice: str):
+        user_id = interaction.user.id
+        balance = user_balances.get(user_id, 0)
+
+        if balance < JANKEN_COST:
+            await interaction.response.edit_message(
+                content="💸 Lydiaが足りません！（2000必要）", view=None)
+            return
+
+        bot_choice = random.choice(list(JANKEN_CHOICES.keys()))
+        result_text = (
+            f"🧑 {interaction.user.display_name} のじゃんけん！\n"
+            f"あなた：{JANKEN_CHOICES[user_choice]} vs Bot：{JANKEN_CHOICES[bot_choice]}\n\n"
+        )
+
+        if user_choice == bot_choice:
+            result_text += "🤝 あいこ！Lydiaの変動はありません。"
+        elif (user_choice == "✊" and bot_choice == "✌️") or \
+             (user_choice == "✌️" and bot_choice == "✋") or \
+             (user_choice == "✋" and bot_choice == "✊"):
+            user_balances[user_id] += JANKEN_COST
+            result_text += f"🎉 勝ち！2000 Lydia 獲得！（残高：{user_balances[user_id]}）"
+        else:
+            user_balances[user_id] -= JANKEN_COST
+            result_text += f"😢 負け… 2000 Lydia 消費（残高：{user_balances[user_id]}）"
+
+        save_balances()
+        await interaction.message.edit(content=result_text, view=None)
+
+@bot.tree.command(name="じゃんけん", description="Botとじゃんけんをします（2000Lydia消費）")
+async def janken(interaction: discord.Interaction):
+    await interaction.response.send_message(
+        f"🕹 {interaction.user.display_name} がじゃんけんを開始しました！選んでください：",
+        view=JankenView(interaction.user.id)
+    )
+
 
 # 起動時処理
 @bot.event
