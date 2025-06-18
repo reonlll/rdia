@@ -458,24 +458,20 @@ async def janken(interaction: discord.Interaction):
 async def view_tower(interaction: discord.Interaction):
     user = interaction.user
 
-    has_light_role = discord.utils.get(user.roles, name="光")
-    has_shadow_role = discord.utils.get(user.roles, name="影")
+    has_sun_role = discord.utils.get(user.roles, name="太陽")
+    has_moon_role = discord.utils.get(user.roles, name="月")
 
-    if has_light_role and not has_shadow_role:
-        # 光の塔の情報だけ見える
-        await interaction.response.send_message(f"🗼 **光の塔** は現在 **{tower_data['light']} 階**です。", ephemeral=True)
+    if has_sun_role and not has_moon_role:
+        await interaction.response.send_message(f"🌞 **太陽の塔** は現在 **{tower_data['light']} 階**です。", ephemeral=True)
 
-    elif has_shadow_role and not has_light_role:
-        # 影の塔の情報だけ見える
-        await interaction.response.send_message(f"🌑 **影の塔** は現在 **{tower_data['shadow']} 階**です。", ephemeral=True)
+    elif has_moon_role and not has_sun_role:
+        await interaction.response.send_message(f"🌙 **月の塔** は現在 **{tower_data['shadow']} 階**です。", ephemeral=True)
 
-    elif has_light_role and has_shadow_role:
-        # 両方持ってる場合は警告
-        await interaction.response.send_message("⚠️ あなたは『光』と『影』両方のロールを持っています。運営にご連絡ください。", ephemeral=True)
+    elif has_sun_role and has_moon_role:
+        await interaction.response.send_message("⚠️ あなたは『太陽』と『月』両方のロールを持っています。運営に連絡してください。", ephemeral=True)
 
     else:
-        # どちらのロールもない場合
-        await interaction.response.send_message("🔒 このコマンドを使うには「光」または「影」のロールが必要です。", ephemeral=True)
+        await interaction.response.send_message("🔒 このコマンドを使うには「太陽」または「月」のロールが必要です。", ephemeral=True)
 
 import datetime
 import random
