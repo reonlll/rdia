@@ -19,6 +19,7 @@ import json
 import os
 import discord
 import requests
+import datetime
 from discord.ext import commands
 from discord import app_commands
 
@@ -93,6 +94,7 @@ def load_roles():
 # --- データ構造（残高・ロール記録など） ---
 user_balances = {}
 user_owned_roles = {}
+last_stack_date = {}
 tower_data = {
     "light": 0,
     "shadow": 0
