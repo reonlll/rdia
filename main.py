@@ -493,25 +493,27 @@ async def stack_tower(interaction: discord.Interaction):
         await interaction.response.send_message("❌ あなたには光または影のロールが必要です。", ephemeral=True)
         return
 
-    from datetime import datetime
-    today = datetime.utcnow().strftime("%Y-%m-%d")
+    # 今日の日付（UTC基準）
+    today = datetime.datetime.utcnow().strftime("%Y-%m-%d")
+
     if LAST_STACK.get(user_id) == today:
         await interaction.response.send_message("📅 今日はもう塔を積みました。", ephemeral=True)
         return
 
-    import random
+    # ランダムで1〜5階
     stack_amount = random.randint(1, 5)
 
+    # どちらの塔に積むか
     if 光ロール:
-        TOWER_DATA["光"] += stack_amount
+        tower_data["light"] += stack_amount
         tower_name = "光の塔"
     else:
-        TOWER_DATA["影"] += stack_amount
+        tower_data["shadow"] += stack_amount
         tower_name = "影の塔"
 
     LAST_STACK[user_id] = today
 
-    # 実行したチャンネルに表示
+    # メッセージ送信
     await interaction.channel.send(f"{tower_name} に {stack_amount}階 積みました！")
     await interaction.response.send_message("✅ 塔を積みました！", ephemeral=True)
 
