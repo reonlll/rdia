@@ -432,10 +432,10 @@ class JankenView(ui.View):
              (user_choice == "✌️" and bot_choice == "✋") or \
              (user_choice == "✋" and bot_choice == "✊"):
             user_balances[user_id] += JANKEN_COST
-            result_text += f"🎉 勝ち！2000 Lydia 獲得！
+            result_text += f"🎉 勝ち！2000 Lydia 獲得！"
         else:
             user_balances[user_id] -= JANKEN_COST
-            result_text += f"😢 負け… 2000 Lydia 消費
+            result_text += f"😢 負け… 2000 Lydia 消費"
 
         save_balances()
         await interaction.message.edit(content=result_text, view=None)
