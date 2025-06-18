@@ -459,13 +459,20 @@ async def view_tower(interaction: discord.Interaction):
     has_shadow_role = discord.utils.get(user.roles, name="影")
 
     if has_light_role and not has_shadow_role:
-        await interaction.response.send_message(f"🗼 **光の塔** は現在 **{tower_data['light']} 階**です。", ephemeral=False)
+        # 光の塔の情報だけ見える
+        await interaction.response.send_message(f"🗼 **光の塔** は現在 **{tower_data['light']} 階**です。", ephemeral=True)
+
     elif has_shadow_role and not has_light_role:
-        await interaction.response.send_message(f"🌑 **影の塔** は現在 **{tower_data['shadow']} 階**です。", ephemeral=False)
+        # 影の塔の情報だけ見える
+        await interaction.response.send_message(f"🌑 **影の塔** は現在 **{tower_data['shadow']} 階**です。", ephemeral=True)
+
     elif has_light_role and has_shadow_role:
-        await interaction.response.send_message("⚠️ あなたは『光』と『影』両方のロールを持っています。運営に確認してください。", ephemeral=True)
+        # 両方持ってる場合は警告
+        await interaction.response.send_message("⚠️ あなたは『光』と『影』両方のロールを持っています。運営にご連絡ください。", ephemeral=True)
+
     else:
-        await interaction.response.send_message("🔒 塔を見るには「光」または「影」のロールが必要です。", ephemeral=True)
+        # どちらのロールもない場合
+        await interaction.response.send_message("🔒 このコマンドを使うには「光」または「影」のロールが必要です。", ephemeral=True)
 
 # 起動時処理
 @bot.event
