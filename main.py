@@ -451,6 +451,18 @@ async def janken(interaction: discord.Interaction):
         view=JankenView(interaction.user.id)
     )
 
+@bot.tree.command(name="塔を見る", description="現在の塔の進捗を確認します（光/闇ロール所持者専用）")
+async def view_tower(interaction: discord.Interaction):
+    user = interaction.user
+    roles = [r.name for r in user.roles]
+    
+    if "光" in roles:
+        await interaction.response.send_message(f"🗼 **光の塔** は現在 **{tower_data['light']} 階**です。", ephemeral=False)
+    elif "闇" in roles:
+        await interaction.response.send_message(f"🌑 **闇の塔** は現在 **{tower_data['dark']} 階**です。", ephemeral=False)
+    else:
+        await interaction.response.send_message("🔒 塔を見るには「光」または「闇」のロールが必要です。", ephemeral=True)
+
 
 # 起動時処理
 @bot.event
