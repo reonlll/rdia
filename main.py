@@ -486,11 +486,11 @@ async def stack_tower(interaction: discord.Interaction):
     user_id = user.id
 
     # ロールチェック
-    光ロール = discord.utils.get(user.roles, name="光")
-    影ロール = discord.utils.get(user.roles, name="影")
+    太陽ロール = discord.utils.get(user.roles, name="光")
+    月ロール = discord.utils.get(user.roles, name="影")
 
-    if not 光ロール and not 影ロール:
-        await interaction.response.send_message("❌ あなたには光または影のロールが必要です。", ephemeral=True)
+    if not 太陽ロール and not 月ロール:
+        await interaction.response.send_message("❌ あなたには太陽または月のロールが必要です。", ephemeral=True)
         return
 
     # 今日の日付（UTC基準）
@@ -504,7 +504,7 @@ async def stack_tower(interaction: discord.Interaction):
     stack_amount = random.randint(1, 5)
 
     # どちらの塔に積むか
-    if 光ロール:
+    if 太陽ロール:
         tower_data["light"] += stack_amount
         tower_name = "光の塔"
     else:
