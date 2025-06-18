@@ -476,6 +476,48 @@ async def view_tower(interaction: discord.Interaction):
         # どちらのロールもない場合
         await interaction.response.send_message("🔒 このコマンドを使うには「光」または「影」のロールが必要です。", ephemeral=True)
 
+import datetime
+
+@bot.tree.command(name="塔を積む", description="自分の塔を1日1回積み上げます（1〜5階）")
+async def stack_tower(interaction: discord.Interaction):
+    user = interaction.user
+    user_id = user.id
+
+    # 所属ロール確認
+    has_light = discord.utils.get(user.roles, name="光")
+    has_shadow = discord.utils.get(user.roles, name="影")
+
+    if not has_light and not has_shadow:
+        await interaction.response.send_message("❌ このコマンドは「光」または「影」ロールを持つ本メンバー専用です。", ephemeral=True)
+        return
+
+    # 今日すでに積んだかチェック
+    today = datetime.datetime.now().date()
+    if last_stack_date.get(user_id) == today:
+        await interaction.response.send_message("📅 今日はすでに塔を積みました！明日また挑戦してください。", ephemeral=True)
+        return
+
+    # ランダムに1〜5階
+    added = random.randint(1, 5)
+
+    if has_light and not has_shadow:
+        tower_data["light"] += added
+        tower_name = "光の塔"
+    elif has_shadow and not has_light:
+        tower_data["shadow"] += added
+        tower_name = "影の塔"
+    else:
+        await interaction.response.send_message("⚠️ あなたは『光』『影』両方のロールを持っています。運営にご連絡ください。", ephemeral=True)
+        return
+
+    # 日付記録
+    last_stack_date[user_id] = today
+
+    await interaction.response.send_message(
+        f"🧱 あなたは **{tower_name}** を **{added}階** 積み上げました！\n"
+        f"また明日挑戦できます！", ephemeral=True
+    )
+
 # 起動時処理
 @bot.event
 async def on_ready():
