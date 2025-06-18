@@ -479,34 +479,40 @@ async def view_tower(interaction: discord.Interaction):
 import datetime
 import random
 
-@bot.tree.command(name="塔を積む", description="自分の塔に1日1回だけ階を積みます（1〜5階）")
+@bot.tree.command(name="塔を積む", description="あなたの勢力の塔を積み上げます（1日1回）")
 async def stack_tower(interaction: discord.Interaction):
     user = interaction.user
-    today = datetime.date.today()
+    user_id = user.id
 
-    user_last = last_stack_date.get(user.id)
-    if user_last == str(today):
-        await interaction.response.send_message("今日はすでに塔を積みました！", ephemeral=True)
+    # ロールチェック
+    光ロール = discord.utils.get(user.roles, name="光")
+    影ロール = discord.utils.get(user.roles, name="影")
+
+    if not 光ロール and not 影ロール:
+        await interaction.response.send_message("❌ あなたには光または影のロールが必要です。", ephemeral=True)
         return
 
-    # 勢力判定
-    is_light = any(role.name == "光" for role in user.roles)
-    is_shadow = any(role.name == "影" for role in user.roles)
-
-    if not is_light and not is_shadow:
-        await interaction.response.send_message("どちらの勢力にも所属していません。", ephemeral=True)
+    from datetime import datetime
+    today = datetime.utcnow().strftime("%Y-%m-%d")
+    if LAST_STACK.get(user_id) == today:
+        await interaction.response.send_message("📅 今日はもう塔を積みました。", ephemeral=True)
         return
 
-    floor = random.randint(1, 5)
-    if is_light:
-        tower_data["light"] += floor
-        await interaction.response.send_message(f"🌞 光の塔に **{floor}階** 積みました！", ephemeral=True)
-    elif is_shadow:
-        tower_data["shadow"] += floor
-        await interaction.response.send_message(f"🌑 影の塔に **{floor}階** 積みました！", ephemeral=True)
+    import random
+    stack_amount = random.randint(1, 5)
 
-    last_stack_date[user.id] = str(today)
-    save_tower_data()
+    if 光ロール:
+        TOWER_DATA["光"] += stack_amount
+        tower_name = "光の塔"
+    else:
+        TOWER_DATA["影"] += stack_amount
+        tower_name = "影の塔"
+
+    LAST_STACK[user_id] = today
+
+    # 実行したチャンネルに表示
+    await interaction.channel.send(f"{tower_name} に {stack_amount}階 積みました！")
+    await interaction.response.send_message("✅ 塔を積みました！", ephemeral=True)
 
 # 起動時処理
 @bot.event
