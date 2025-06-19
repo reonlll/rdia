@@ -481,11 +481,12 @@ async def stack_tower(interaction: discord.Interaction):
     user = interaction.user
     user_id = user.id
 
-    太陽ロール = discord.utils.get(user.roles, name="太陽")
-    月ロール = discord.utils.get(user.roles, name="月")
+    # ロール取得（黎明＝light、夜影＝shadow）
+    黎明ロール = discord.utils.get(user.roles, name="黎明")
+    夜影ロール = discord.utils.get(user.roles, name="夜影")
 
-    if not 太陽ロール and not 月ロール:
-        await interaction.response.send_message("❌ あなたには太陽または月のロールが必要です。", ephemeral=True)
+    if not 黎明ロール and not 夜影ロール:
+        await interaction.response.send_message("❌ あなたには黎明または夜影のロールが必要です。", ephemeral=True)
         return
 
     today = datetime.datetime.utcnow().strftime("%Y-%m-%d")
@@ -495,12 +496,12 @@ async def stack_tower(interaction: discord.Interaction):
 
     stack_amount = random.randint(1, 5)
 
-    if 太陽ロール:
+    if 黎明ロール:
         tower_data["light"] += stack_amount
-        tower_name = "太陽の塔"
+        tower_name = "黎明の塔"
     else:
         tower_data["shadow"] += stack_amount
-        tower_name = "月の塔"
+        tower_name = "夜影の塔"
 
     LAST_STACK[user_id] = today
 
