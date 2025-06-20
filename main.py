@@ -519,6 +519,50 @@ async def reset_stack_date(interaction: discord.Interaction):
     LAST_STACK.clear()
     await interaction.response.send_message("✅ 全ユーザーの塔積み制限をリセットしました。")
 
+from discord.ext import tasks
+import asyncio
+
+HOTEL_COST = 10000
+HOTEL_ROLE_NAME = "塔の住人"
+
+class HotelButtonView(ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @ui.button(label="🏨 ツーショ部屋を借りる", style=discord.ButtonStyle.primary, custom_id="hotel_room")
+    async def hotel_room_button(self, interaction: discord.Interaction, button: ui.Button):
+        user = interaction.user
+        guild = interaction.guild
+
+        # 残高・ロールチェック
+        is_free = HOTEL_ROLE_NAME in [role.name for role in user.roles]
+        if not is_free:
+            if user_balances.get(user.id, 0) < HOTEL_COST:
+                await interaction.response.send_message("💸 残高が足りません（10000 Lydia 必要）", ephemeral=True)
+                return
+            user_balances[user.id] -= HOTEL_COST
+            save_balances()
+
+        # VCを作成
+        category = discord.utils.get(guild.categories, name="ホテル")  # 既存カテゴリに設置
+        overwrites = {
+            guild.default_role: discord.PermissionOverwrite(connect=True, view_channel=True),
+            user: discord.PermissionOverwrite(connect=True, view_channel=True, manage_channels=True),
+        }
+        vc = await guild.create_voice_channel(
+            name=f"ツーショ - {user.display_name}",
+            overwrites=overwrites,
+            category=category
+        )
+        await interaction.response.send_message(f"✅ ボイスチャンネル「{vc.name}」を作成しました！\n12時間後に削除されます。", ephemeral=True)
+
+        # 削除タスク
+        async def delete_after_delay():
+            await asyncio.sleep(43200)  # 12時間
+            await vc.delete()
+
+        bot.loop.create_task(delete_after_delay())
+
 # 起動時処理
 @bot.event
 async def on_ready():
