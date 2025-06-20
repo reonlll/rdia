@@ -46,6 +46,77 @@ class HotelView(ui.View):
     async def freedom(self, interaction: discord.Interaction, button: ui.Button):
         await create_freedom_vc(interaction)
 
+import asyncio  # ← ファイル冒頭に追加しておいてね！
+
+async def create_twoshot_vc(interaction):
+    guild = interaction.guild
+    author = interaction.user
+    tower_role = discord.utils.get(guild.roles, name="塔の住人")
+
+    price = 0 if tower_role in author.roles else 10000
+
+    overwrites = {
+        guild.default_role: discord.PermissionOverwrite(view_channel=True),
+        author: discord.PermissionOverwrite(view_channel=True, connect=True, manage_channels=True),
+        guild.me: discord.PermissionOverwrite(view_channel=True, connect=True, manage_channels=True)
+    }
+
+    vc = await guild.create_voice_channel(
+        name=f"🛏️ツーショ（{author.display_name}）",
+        overwrites=overwrites,
+        user_limit=2,
+        reason="ツーショ部屋作成"
+    )
+
+    await interaction.response.send_message(f"✅ ツーショ部屋を作成しました：{vc.mention}", ephemeral=True)
+
+    await asyncio.sleep(43200)  # 12時間 = 43200秒
+    await vc.delete(reason="自動削除（ツーショ）")
+
+async def create_secret_vc(interaction):
+    guild = interaction.guild
+    author = interaction.user
+
+    overwrites = {
+        guild.default_role: discord.PermissionOverwrite(view_channel=False),
+        author: discord.PermissionOverwrite(view_channel=True, connect=True, manage_channels=True),
+        guild.me: discord.PermissionOverwrite(view_channel=True, connect=True, manage_channels=True)
+    }
+
+    vc = await guild.create_voice_channel(
+        name=f"🕵️シークレット（{author.display_name}）",
+        overwrites=overwrites,
+        user_limit=2,
+        reason="シークレット部屋作成"
+    )
+
+    await interaction.response.send_message(f"✅ シークレット部屋を作成しました：{vc.mention}", ephemeral=True)
+
+    await asyncio.sleep(43200)
+    await vc.delete(reason="自動削除（シークレット）")
+
+async def create_freedom_vc(interaction):
+    guild = interaction.guild
+    author = interaction.user
+
+    overwrites = {
+        guild.default_role: discord.PermissionOverwrite(view_channel=True),
+        author: discord.PermissionOverwrite(view_channel=True, connect=True, manage_channels=True),
+        guild.me: discord.PermissionOverwrite(view_channel=True, connect=True, manage_channels=True)
+    }
+
+    vc = await guild.create_voice_channel(
+        name=f"🌈フリーダム（{author.display_name}）",
+        overwrites=overwrites,
+        user_limit=2,
+        reason="フリーダム部屋作成"
+    )
+
+    await interaction.response.send_message(f"✅ フリーダム部屋を作成しました：{vc.mention}", ephemeral=True)
+
+    await asyncio.sleep(43200)
+    await vc.delete(reason="自動削除（フリーダム）")
+
 def save_balances():
     url = f"https://api.jsonbin.io/v3/b/{BIN_ID}"
     headers = {
