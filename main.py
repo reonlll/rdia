@@ -78,7 +78,7 @@ def save_roles():
 
 def load_balances():
     global user_balances
-    url = f"https://api.jsonbin.io/v3/b/{BIN_ID}/latest"
+    url = f"https://api.jsonbin.io/v3/b/{BALANCE_BIN_ID}/latest"
     headers = {
         "X-Master-Key": API_KEY
     }
