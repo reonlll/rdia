@@ -682,22 +682,27 @@ async def create_freedom_hotel(interaction: discord.Interaction):
 
 @bot.tree.command(name="ホテルボタン設置", description="ホテルメニューとVC作成ボタンを設置します")
 async def setup_hotel_buttons(interaction: discord.Interaction):
+    # 管理者権限チェック
     if not interaction.user.guild_permissions.administrator:
         await interaction.response.send_message("❌ このコマンドは管理者専用です。", ephemeral=True)
         return
 
+    # Embedの作成
     embed = discord.Embed(
         title="🏨 ホテルメニュー",
         description=(
             "以下から部屋を選んでVCを作成しましょう！\n\n"
             "🛏 ツーショ部屋（10000Lydia｜『塔の住人』は無料）\n"
-            "🕵️‍♂️ シークレット部屋（30000Lydia｜誰にも見られない）\n"
+            "🕵️ シークレット部屋（30000Lydia｜誰にも見られない）\n"
             "🎨 フリーダム部屋（50000Lydia｜自由空間）"
         ),
         color=discord.Color.orange()
     )
 
+    # ホテルメニューをチャンネルに送信
     await interaction.channel.send(embed=embed, view=HotelButtonView())
+
+    # 実行者にメッセージ送信（ephemeral = 実行者のみに見える）
     await interaction.response.send_message("✅ ホテルメニューを設置しました！", ephemeral=True)
 
 # 起動時処理
