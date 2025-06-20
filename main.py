@@ -682,7 +682,6 @@ async def create_freedom_hotel(interaction: discord.Interaction):
 
 @bot.tree.command(name="ホテルボタン設置", description="ホテルメニューとVC作成ボタンを設置します")
 async def setup_hotel_buttons(interaction: discord.Interaction):  # ← 76行目と想定
-    if not interaction.user.guild_permissions.administrator:      # ← ★インデントが必要！
         await interaction.response.send_message("❌ このコマンドは管理者専用です。", ephemeral=True)
         return
 
