@@ -30,20 +30,20 @@ API_KEY = "$2a$10$DUY6hRZaDGFQ1O6ddUbZpuDZY/k0xEA6iX69Ec2Qgc5Y4Rnihr9iO"
 
 from discord import ui, Interaction, ButtonStyle
 
-class HotelView(ui.View):
+class HotelView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
 
-    @ui.button(label="🏩 ツーショ（10000Lydia／塔の住人は無料）", style=ButtonStyle.primary, custom_id="hotel_twoshot")
-    async def twoshot(self, interaction: Interaction, button: ui.Button):
+    @discord.ui.button(label="🛏 ツーショ部屋を作成する", style=discord.ButtonStyle.primary, custom_id="hotel_tsusho")
+    async def tsusho_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         await create_twoshot_vc(interaction)
 
-    @ui.button(label="🔒 シークレット（30000Lydia）", style=ButtonStyle.secondary, custom_id="hotel_secret")
-    async def secret(self, interaction: Interaction, button: ui.Button):
+    @discord.ui.button(label="🕵️‍♂️ シークレット部屋を作成する", style=discord.ButtonStyle.secondary, custom_id="hotel_secret")
+    async def secret_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         await create_secret_vc(interaction)
 
-    @ui.button(label="🌈 フリーダム（50000Lydia）", style=ButtonStyle.success, custom_id="hotel_freedom")
-    async def freedom(self, interaction: Interaction, button: ui.Button):
+    @discord.ui.button(label="🎨 フリーダム部屋を作成する", style=discord.ButtonStyle.success, custom_id="hotel_freedom")
+    async def freedom_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         await create_freedom_vc(interaction)
 
 def save_balances():
