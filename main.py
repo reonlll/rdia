@@ -46,6 +46,131 @@ class HotelView(discord.ui.View):
     async def freedom_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         await create_freedom_vc(interaction)
 
+import asyncio
+
+async def create_twoshot_vc(interaction):
+    guild = interaction.guild
+    author = interaction.user
+
+    # 「塔の住人」ロールを持っていれば無料
+    tower_role = discord.utils.get(guild.roles, name="塔の住人")
+    is_free = tower_role in author.roles
+
+    # 無料でないなら、10000Lydiaを引く
+    if not is_free:
+        user_id = str(author.id)
+        if user_id not in user_balances or user_balances[user_id] < 10000:
+            await interaction.response.send_message("💸 お金が足りません！（10000Lydia必要）", ephemeral=True)
+            return
+        user_balances[user_id] -= 10000
+        save_balances()
+
+    # VCの作成
+    overwrites = {
+        guild.default_role: discord.PermissionOverwrite(connect=False),
+        author: discord.PermissionOverwrite(connect=True, manage_channels=True),
+    }
+
+    vc = await guild.create_voice_channel(
+        name=f"🛏ツーショ - {author.display_name}",
+        overwrites=overwrites,
+        user_limit=2,  # 👈 人数制限2人
+        reason="ツーショ部屋の作成"
+    )
+
+    await interaction.response.send_message(f"✅ ツーショ部屋を作成しました！ → {vc.mention}", ephemeral=True)
+
+    # 12時間後に削除
+    await asyncio.sleep(43200)  # 12時間（60*60*12）
+    await vc.delete(reason="12時間経過したため自動削除")
+
+async def create_secret_vc(interaction):
+    guild = interaction.guild
+    author = interaction.user
+
+    user_id = str(author.id)
+    if user_id not in user_balances or user_balances[user_id] < 30000:
+        await interaction.response.send_message("💸 お金が足りません！（30000Lydia必要）", ephemeral=True)
+        return
+
+    user_balances[user_id] -= 30000
+    save_balances()
+
+    overwrites = {
+        guild.default_role: discord.PermissionOverwrite(view_channel=False),
+        author: discord.PermissionOverwrite(view_channel=True, connect=True, manage_channels=True),
+    }
+
+    vc = await guild.create_voice_channel(
+        name=f"🔒シークレット - {author.display_name}",
+        overwrites=overwrites,
+        user_limit=2,
+        reason="シークレット部屋の作成"
+    )
+
+    await interaction.response.send_message(f"✅ シークレット部屋を作成しました！ → {vc.mention}", ephemeral=True)
+
+    await asyncio.sleep(43200)
+    await vc.delete(reason="12時間経過したため自動削除")
+    
+    async def create_freedom_vc(interaction):
+    guild = interaction.guild
+    author = interaction.user
+
+    user_id = str(author.id)
+    if user_id not in user_balances or user_balances[user_id] < 50000:
+        await interaction.response.send_message("💸 お金が足りません！（50000Lydia必要）", ephemeral=True)
+        return
+
+    user_balances[user_id] -= 50000
+    save_balances()
+
+    overwrites = {
+        guild.default_role: discord.PermissionOverwrite(connect=True),
+        author: discord.PermissionOverwrite(manage_channels=True),
+    }
+
+    vc = await guild.create_voice_channel(
+        name=f"🌈フリーダム - {author.display_name}",
+        overwrites=overwrites,
+        user_limit=99,  # 実質制限なし
+        reason="フリーダム部屋の作成"
+    )
+
+    await interaction.response.send_message(f"✅ フリーダム部屋を作成しました！ → {vc.mention}", ephemeral=True)
+
+    await asyncio.sleep(43200)
+    await vc.delete(reason="12時間経過したため自動削除")
+
+async def create_freedom_vc(interaction):
+    guild = interaction.guild
+    author = interaction.user
+
+    user_id = str(author.id)
+    if user_id not in user_balances or user_balances[user_id] < 50000:
+        await interaction.response.send_message("💸 お金が足りません！（50000Lydia必要）", ephemeral=True)
+        return
+
+    user_balances[user_id] -= 50000
+    save_balances()
+
+    overwrites = {
+        guild.default_role: discord.PermissionOverwrite(connect=True),
+        author: discord.PermissionOverwrite(manage_channels=True),
+    }
+
+    vc = await guild.create_voice_channel(
+        name=f"🌈フリーダム - {author.display_name}",
+        overwrites=overwrites,
+        user_limit=99,  # 実質制限なし
+        reason="フリーダム部屋の作成"
+    )
+
+    await interaction.response.send_message(f"✅ フリーダム部屋を作成しました！ → {vc.mention}", ephemeral=True)
+
+    await asyncio.sleep(43200)
+    await vc.delete(reason="12時間経過したため自動削除")
+
 def save_balances():
     url = f"https://api.jsonbin.io/v3/b/{BIN_ID}"
     headers = {
