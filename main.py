@@ -611,6 +611,42 @@ async def create_secret_hotel(interaction: discord.Interaction):
 
     asyncio.create_task(delete_channel_later())
 
+@bot.tree.command(name="フリーダムホテル", description="自由な部屋を作成します（50000Lydia）")
+async def create_freedom_hotel(interaction: discord.Interaction):
+    user = interaction.user
+    user_id = user.id
+    guild = interaction.guild
+
+    HOTEL_COST = 50000
+
+    if user_balances.get(user_id, 0) < HOTEL_COST:
+        await interaction.response.send_message("💸 残高が足りません（50000 Lydia 必要）", ephemeral=True)
+        return
+
+    # 残高を減らして保存
+    user_balances[user_id] -= HOTEL_COST
+    save_balances()
+
+    # カテゴリ取得 or 作成
+    category = discord.utils.get(guild.categories, name="ホテル")
+    if not category:
+        category = await guild.create_category("ホテル")
+
+    # VC作成（制限なし・誰でも見える）
+    vc = await guild.create_voice_channel(
+        name=f"フリーダム-{user.display_name}",
+        category=category
+    )
+
+    await interaction.response.send_message(f"✅ フリーダム部屋を作成しました：{vc.mention}", ephemeral=True)
+
+    # 12時間後に削除
+    async def delete_channel_later():
+        await asyncio.sleep(43200)  # 12時間 = 43200秒
+        await vc.delete()
+
+    asyncio.create_task(delete_channel_later())
+
 # 起動時処理
 @bot.event
 async def on_ready():
