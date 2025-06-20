@@ -30,7 +30,21 @@ API_KEY = "$2a$10$DUY6hRZaDGFQ1O6ddUbZpuDZY/k0xEA6iX69Ec2Qgc5Y4Rnihr9iO"
 
 from discord import ui, Interaction, ButtonStyle
 
+class HotelView(ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
 
+    @ui.button(label="🏨 ツーショ（10000Lydia）", style=discord.ButtonStyle.primary)
+    async def twoshot(self, interaction: discord.Interaction, button: ui.Button):
+        await create_twoshot_vc(interaction)
+
+    @ui.button(label="🕵️ シークレット（30000Lydia）", style=discord.ButtonStyle.secondary)
+    async def secret(self, interaction: discord.Interaction, button: ui.Button):
+        await create_secret_vc(interaction)
+
+    @ui.button(label="🌈 フリーダム（50000Lydia）", style=discord.ButtonStyle.success)
+    async def freedom(self, interaction: discord.Interaction, button: ui.Button):
+        await create_freedom_vc(interaction)
 
 def save_balances():
     url = f"https://api.jsonbin.io/v3/b/{BIN_ID}"
