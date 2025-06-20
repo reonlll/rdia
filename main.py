@@ -46,6 +46,21 @@ class HotelView(ui.View):
     async def freedom(self, interaction: Interaction, button: ui.Button):
         await create_freedom_vc(interaction)
 
+await interaction.channel.send(
+    embed=discord.Embed(
+        title="🏨 ホテルメニュー",
+        description=(
+            "好きな部屋を選んで、VCを作成しよう！\n\n"
+            "🏩 ツーショ：2人部屋（**10000Lydia／塔の住人は無料**）\n"
+            "🔒 シークレット：誰にも見られない2人部屋（30000Lydia）\n"
+            "🌈 フリーダム：何でもアリの自由な部屋（50000Lydia）\n\n"
+            "※VCは12時間後に自動削除されます。"
+        ),
+        color=discord.Color.purple()
+    ),
+    view=HotelView()
+)
+
 
 def save_balances():
     url = f"https://api.jsonbin.io/v3/b/{BIN_ID}"
