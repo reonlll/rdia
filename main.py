@@ -680,6 +680,27 @@ async def create_freedom_hotel(interaction: discord.Interaction):
 
     asyncio.create_task(delete_channel_later())
 
+@bot.tree.command(name="ホテルボタン設置", description="ホテルメニューとVC作成ボタンを設置します（管理者限定）")
+async def setup_hotel_buttons(interaction: discord.Interaction):
+    if not interaction.user.guild_permissions.administrator:
+        await interaction.response.send_message("❌ このコマンドは管理者専用です。", ephemeral=True)
+        return
+
+    embed = discord.Embed(
+        title="🏨 ホテルメニュー",
+        description=(
+            "以下から部屋を選んでVCを作成しましょう！\n\n"
+            "🏩 **ツーショ**：2人部屋（**10000Lydia／塔の住人は無料**）\n"
+            "🔒 **シークレット**：管理者以外見えない2人部屋（30000Lydia）\n"
+            "🌈 **フリーダム**：自由な部屋（50000Lydia）\n\n"
+            "※VCは12時間後に自動削除されます。"
+        ),
+        color=discord.Color.blurple()
+    )
+
+    await interaction.channel.send(embed=embed, view=HotelView())
+    await interaction.response.send_message("✅ ホテルメニューを設置しました。", ephemeral=True)
+
 # 起動時処理
 @bot.event
 async def on_ready():
