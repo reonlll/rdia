@@ -563,6 +563,54 @@ class HotelButtonView(ui.View):
 
         bot.loop.create_task(delete_after_delay())
 
+@bot.tree.command(name="シークレットホテル", description="2人だけのシークレット部屋を作ります（30000Lydia）")
+async def create_secret_hotel(interaction: discord.Interaction):
+    user = interaction.user
+    user_id = user.id
+    guild = interaction.guild
+
+    HOTEL_COST = 30000
+
+    if user_balances.get(user_id, 0) < HOTEL_COST:
+        await interaction.response.send_message("💸 残高が足りません（30000 Lydia 必要）", ephemeral=True)
+        return
+
+    # 残高を減らして保存
+    user_balances[user_id] -= HOTEL_COST
+    save_balances()
+
+    # カテゴリ取得 or 作成
+    category = discord.utils.get(guild.categories, name="ホテル")
+    if not category:
+        category = await guild.create_category("ホテル")
+
+    # VC権限設定（作成者と管理者以外は見えない）
+    overwrites = {
+        guild.default_role: discord.PermissionOverwrite(view_channel=False),
+        user: discord.PermissionOverwrite(view_channel=True, connect=True, speak=True),
+    }
+
+    for role in guild.roles:
+        if role.permissions.administrator:
+            overwrites[role] = discord.PermissionOverwrite(view_channel=True, connect=True)
+
+    # VC作成
+    vc = await guild.create_voice_channel(
+        name=f"シークレット-{user.display_name}",
+        category=category,
+        user_limit=2,
+        overwrites=overwrites
+    )
+
+    await interaction.response.send_message(f"✅ シークレット部屋を作成しました：{vc.mention}", ephemeral=True)
+
+    # 12時間後に削除
+    async def delete_channel_later():
+        await asyncio.sleep(43200)  # 12時間 = 43200秒
+        await vc.delete()
+
+    asyncio.create_task(delete_channel_later())
+
 # 起動時処理
 @bot.event
 async def on_ready():
