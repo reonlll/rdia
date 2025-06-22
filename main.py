@@ -524,6 +524,99 @@ async def reset_stack_date(interaction: discord.Interaction):
     LAST_STACK.clear()
     await interaction.response.send_message("✅ 全ユーザーの塔積み制限をリセットしました。")
 
+from discord import ui, ButtonStyle, Interaction
+
+class HotelMenuView(ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @ui.button(label="🏨 ツーショ部屋を借りる", style=ButtonStyle.primary, custom_id="room_twoshot")
+    async def twoshot_button(self, interaction: Interaction, button: ui.Button):
+        await create_vc_room(interaction, "ツーショ", cost=10000, user_limit=2, is_secret=False, bypass_role="塔の住人")
+
+    @ui.button(label="🕵️‍♂️ シークレット部屋を借りる", style=ButtonStyle.secondary, custom_id="room_secret")
+    async def secret_button(self, interaction: Interaction, button: ui.Button):
+        await create_vc_room(interaction, "シークレット", cost=30000, user_limit=2, is_secret=True)
+
+    @ui.button(label="🎨 フリーダム部屋を借りる", style=ButtonStyle.success, custom_id="room_freedom")
+    async def freedom_button(self, interaction: Interaction, button: ui.Button):
+        await create_vc_room(interaction, "フリーダム", cost=50000, user_limit=None, is_secret=False)
+        
+@bot.tree.command(name="ホテルボタン設置", description="VCを作るホテルボタンを設置します（管理者限定）")
+async def setup_hotel_menu(interaction: discord.Interaction):
+    if not interaction.user.guild_permissions.administrator:
+        await interaction.response.send_message("管理者のみ使用可能です。", ephemeral=True)
+        return
+
+    embed = discord.Embed(
+        title="🏨 ホテルメニュー",
+        description=(
+            "以下から部屋を選んでVCを作成しましょう！\n\n"
+            "🛏 ツーショ部屋（10000Lydia｜『塔の住人』は無料）\n"
+            "🕵️‍♂️ シークレット部屋（30000Lydia｜誰にも見られない）\n"
+            "🎨 フリーダム部屋（50000Lydia｜自由空間）"
+        ),
+        color=discord.Color.orange()
+    )
+
+    await interaction.channel.send(embed=embed, view=HotelMenuView())
+    await interaction.response.send_message("✅ ホテルメニューを設置しました！", ephemeral=True)
+    
+import asyncio
+
+async def create_vc_room(interaction: discord.Interaction, room_type: str, cost: int, user_limit: int = None, is_secret: bool = False, bypass_role: str = None):
+    user = interaction.user
+    user_id = user.id
+
+    # 無料ロールによるバイパス判定
+    free = False
+    if bypass_role:
+        role = discord.utils.get(user.roles, name=bypass_role)
+        if role:
+            free = True
+
+    # 通貨チェック
+    if not free and user_balances.get(user_id, 0) < cost:
+        await interaction.response.send_message(f"💸 残高が足りません！必要：{cost} Lydia", ephemeral=True)
+        return
+
+    # 通貨消費（必要な場合）
+    if not free:
+        user_balances[user_id] -= cost
+        save_balances()
+
+    # チャンネルカテゴリを取得または作成（名前：ホテル）
+    category = discord.utils.get(interaction.guild.categories, name="ホテル")
+    if not category:
+        category = await interaction.guild.create_category("ホテル")
+
+    # チャンネル名
+    channel_name = f"{room_type}-{user.display_name}"
+
+    # パーミッション設定
+    overwrites = {
+        interaction.guild.default_role: discord.PermissionOverwrite(view_channel=not is_secret),
+        user: discord.PermissionOverwrite(view_channel=True, connect=True, speak=True)
+    }
+
+    # VC作成
+    vc = await interaction.guild.create_voice_channel(
+        name=channel_name,
+        overwrites=overwrites,
+        category=category,
+        user_limit=user_limit
+    )
+
+    await interaction.response.send_message(f"✅ {room_type} VCを作成しました： {vc.mention}", ephemeral=True)
+
+    # 自動削除（12時間後）
+    await asyncio.sleep(60 * 60 * 12)
+    await vc.delete()
+    
+await create_vc_room(interaction, "ツーショ", cost=10000, user_limit=2, is_secret=False, bypass_role="塔の住人")
+await create_vc_room(interaction, "シークレット", cost=30000, user_limit=2, is_secret=True)
+await create_vc_room(interaction, "フリーダム", cost=50000, user_limit=None, is_secret=False)
+
 # 起動時処理
 @bot.event
 async def on_ready():
